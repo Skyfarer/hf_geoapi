@@ -45,5 +45,33 @@ def get_all_countries():
     countries = [{"id": row["id"], "name": row["name"]} for row in cursor.fetchall()]
     return jsonify({"countries": countries})
 
+@app.route('/api/cities', methods=['GET'])
+def search_cities():
+    country_id = request.args.get('country_id')
+    query = request.args.get('q', '')
+    
+    if not country_id:
+        return jsonify({"error": "country_id parameter is required"}), 400
+    
+    db = get_db()
+    cursor = db.cursor()
+    
+    if query:
+        # Search for cities that start with the query in the specified country
+        cursor.execute(
+            "SELECT id, name FROM cities WHERE country_id = ? AND name LIKE ? ORDER BY name LIMIT 10", 
+            (country_id, f"{query}%")
+        )
+    else:
+        # Return all cities in the specified country
+        cursor.execute(
+            "SELECT id, name FROM cities WHERE country_id = ? ORDER BY name LIMIT 10", 
+            (country_id,)
+        )
+    
+    cities = [{"id": row["id"], "name": row["name"]} for row in cursor.fetchall()]
+    
+    return jsonify({"cities": cities})
+
 if __name__ == '__main__':
     app.run(debug=True)

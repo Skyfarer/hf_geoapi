@@ -75,21 +75,4 @@ def get_all_countries():
     return jsonify({"countries": countries})
 
 if __name__ == '__main__':
-    # Initialize the database if it doesn't exist
-    with app.app_context():
-        db = get_db()
-        cursor = db.cursor()
-        # Check if countries table exists
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='countries'")
-        if not cursor.fetchone():
-            # Create countries table
-            cursor.execute('''
-                CREATE TABLE countries (
-                    id INTEGER PRIMARY KEY,
-                    name TEXT NOT NULL
-                )
-            ''')
-            db.commit()
-            print("Created countries table. Please populate it with data.")
-    
     app.run(debug=True)

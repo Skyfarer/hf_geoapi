@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request, g
 app = Flask(__name__)
 
 # Database configuration
-DATABASE = 'countries.db'
+DATABASE = 'world.sqlite3'
 
 def get_db():
     db = getattr(g, '_database', None)

@@ -59,17 +59,17 @@ def search_cities():
     if query:
         # Search for cities that start with the query in the specified country
         cursor.execute(
-            "SELECT id, name FROM cities WHERE country_id = ? AND name LIKE ? ORDER BY name LIMIT 10", 
+            "SELECT id, name, state_code FROM cities WHERE country_id = ? AND name LIKE ? ORDER BY name LIMIT 10", 
             (country_id, f"{query}%")
         )
     else:
         # Return all cities in the specified country
         cursor.execute(
-            "SELECT id, name FROM cities WHERE country_id = ? ORDER BY name LIMIT 10", 
+            "SELECT id, name, state_code FROM cities WHERE country_id = ? ORDER BY name LIMIT 10", 
             (country_id,)
         )
     
-    cities = [{"id": row["id"], "name": row["name"]} for row in cursor.fetchall()]
+    cities = [{"id": row["id"], "name": row["name"], "state_code": row["state_code"]} for row in cursor.fetchall()]
     
     return jsonify({"cities": cities})
 

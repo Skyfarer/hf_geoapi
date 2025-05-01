@@ -20,7 +20,7 @@ def close_connection(exception):
         db.close()
 
 
-@app.route('/api/countries', methods=['GET'])
+@app.route('/geoapi/countries', methods=['GET'])
 def search_countries():
     query = request.args.get('q', '')
     if not query:
@@ -37,7 +37,7 @@ def search_countries():
     
     return jsonify({"countries": countries})
 
-@app.route('/api/countries/all', methods=['GET'])
+@app.route('/geoapi/countries/all', methods=['GET'])
 def get_all_countries():
     db = get_db()
     cursor = db.cursor()
@@ -45,7 +45,7 @@ def get_all_countries():
     countries = [{"id": row["id"], "name": row["name"]} for row in cursor.fetchall()]
     return jsonify({"countries": countries})
 
-@app.route('/api/cities', methods=['GET'])
+@app.route('/geoapi/cities', methods=['GET'])
 def search_cities():
     country_id = request.args.get('country_id')
     query = request.args.get('q', '')

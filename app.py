@@ -1,4 +1,5 @@
 import sqlite3
+import math
 from flask import Flask, jsonify, request, g
 
 app = Flask(__name__)
@@ -72,6 +73,62 @@ def search_cities():
     cities = [{"id": row["id"], "name": row["name"], "state_code": row["state_code"], "latitude": row["latitude"], "longitude": row["longitude"]} for row in cursor.fetchall()]
     
     return jsonify({"cities": cities})
+
+@app.route('/geoapi/nearest_city', methods=['GET'])
+def find_nearest_city():
+    try:
+        latitude = float(request.args.get('lat'))
+        longitude = float(request.args.get('lon'))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Valid lat and lon parameters are required"}), 400
+    
+    # Calculate distance using Haversine formula
+    db = get_db()
+    cursor = db.cursor()
+    
+    # Get all cities with their coordinates
+    cursor.execute(
+        "SELECT id, name, state_code, country_id, latitude, longitude FROM cities WHERE latitude IS NOT NULL AND longitude IS NOT NULL"
+    )
+    
+    nearest_city = None
+    min_distance = float('inf')
+    
+    for row in cursor.fetchall():
+        city_lat = row["latitude"]
+        city_lon = row["longitude"]
+        
+        # Haversine formula to calculate distance between two points on Earth
+        R = 6371  # Earth radius in kilometers
+        
+        lat1_rad = math.radians(latitude)
+        lon1_rad = math.radians(longitude)
+        lat2_rad = math.radians(city_lat)
+        lon2_rad = math.radians(city_lon)
+        
+        dlon = lon2_rad - lon1_rad
+        dlat = lat2_rad - lat1_rad
+        
+        a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon/2)**2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        distance = R * c
+        
+        if distance < min_distance:
+            min_distance = distance
+            nearest_city = {
+                "id": row["id"],
+                "name": row["name"],
+                "state_code": row["state_code"],
+                "country_id": row["country_id"],
+                "latitude": city_lat,
+                "longitude": city_lon,
+                "distance_km": round(distance, 2)
+            }
+    
+    if nearest_city:
+        return jsonify({"city": nearest_city})
+    else:
+        return jsonify({"error": "No cities found with valid coordinates"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
